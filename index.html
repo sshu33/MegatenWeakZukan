@@ -184,6 +184,25 @@
       color: var(--faint)
     }
 
+    .filter-wrap {
+      margin-bottom: 20px;
+    }
+
+    .filter-toggle {
+      padding: 6px 14px;
+      font-size: 13px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .filter-toggle:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
     /* Filter row */
     .filter-row {
       display: flex;
@@ -282,7 +301,7 @@
     }
 
     thead th:nth-child(3) {
-      text-align: left;
+      text-align: center;
       min-width: 72px
     }
 
@@ -408,6 +427,14 @@
     }
 
     @media(max-width:600px) {
+      thead th:nth-child(3) {
+        display: none;
+      }
+
+      tbody td:nth-child(3) {
+        display: none;
+      }
+
       .r {
         min-width: 16px;
         font-size: 10px;
@@ -486,9 +513,11 @@
       <input id="search" type="search" placeholder="悪魔名で検索（ひらがな・カタカナどちらでも）" autocomplete="off" spellcheck="false">
     </div>
 
-    <div class="filter-row">
-      <span class="filter-label">種族：</span>
-      <button class="tribe-btn active" data-tribe="">すべて</button>
+    <div class="filter-wrap">
+      <button class="filter-toggle" id="filterToggle">種族で絞り込む ▼</button>
+      <div class="filter-row" id="filterRow" style="display:none">
+        <button class="tribe-btn active" data-tribe="">すべて</button>
+      </div>
     </div>
 
     <div class="stats" id="stats"></div>
@@ -879,6 +908,14 @@
       btn.classList.add('active');
       activeTribe = btn.dataset.tribe;
       render();
+    });
+
+    document.getElementById('filterToggle').addEventListener('click', () => {
+      const row = document.getElementById('filterRow');
+      const btn = document.getElementById('filterToggle');
+      const open = row.style.display === 'none';
+      row.style.display = open ? 'flex' : 'none';
+      btn.textContent = open ? '種族で絞り込む ▲' : '種族で絞り込む ▼';
     });
 
     // Search
