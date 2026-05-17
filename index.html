@@ -1212,6 +1212,9 @@
         const name = link.textContent;
         tr.classList.toggle('pinned', pinnedNames.has(name));
       });
+
+      // ピン固定処理の末尾に1行追加
+      document.getElementById('search').focus();
     }
 
     // 行タップで固定/解除（名前リンク以外）
