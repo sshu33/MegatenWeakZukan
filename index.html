@@ -481,10 +481,11 @@
       }
     }
 
-        /* ピン比較エリア */
+    /* ピン比較エリア */
     .pin-section {
       margin-bottom: 16px;
     }
+
     .pin-header {
       font-size: 12px;
       color: var(--muted);
@@ -493,6 +494,7 @@
       align-items: center;
       gap: 8px;
     }
+
     .pin-clear-btn {
       font-size: 11px;
       color: var(--muted);
@@ -501,21 +503,36 @@
       padding: 2px 8px;
       cursor: pointer;
     }
+
     .pin-clear-btn:hover {
       color: var(--text);
       background: var(--surface2);
     }
+
     .pin-table-wrap {
       overflow-x: auto;
       border-radius: var(--radius);
       border: 1px solid var(--border);
     }
-    .pin-table-wrap::-webkit-scrollbar { height: 4px; }
-    .pin-table-wrap::-webkit-scrollbar-track { background: var(--surface); }
-    .pin-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .pin-table-wrap::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .pin-table-wrap::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    .pin-table-wrap::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
     .pin-table-wrap table {
       min-width: 520px;
+      width: 100%;
     }
+
     .pin-table-wrap thead th {
       background: var(--surface);
       padding: 7px 8px;
@@ -528,19 +545,35 @@
       text-align: center;
       white-space: nowrap;
     }
+
     .pin-table-wrap thead th:first-child {
       text-align: left;
       padding-left: 16px;
       min-width: 140px;
     }
-    .pin-table-wrap thead th:nth-child(2) { min-width: 36px; }
-    .pin-table-wrap thead th:nth-child(3) { min-width: 72px; }
+
+    .pin-table-wrap thead th:nth-child(2) {
+      text-align: center;
+      min-width: 36px;
+    }
+
+    .pin-table-wrap thead th:nth-child(3) {
+      text-align: center;
+      min-width: 72px;
+    }
+
+    .pin-table-wrap thead th:nth-child(n+4) {
+      min-width: 52px;
+    }
+
     tbody tr.pinned {
       background: oklch(0.65 0.15 60 / 0.07);
     }
+
     tbody tr.pinned:hover {
       background: oklch(0.65 0.15 60 / 0.12);
     }
+
     /* トースト */
     .pin-toast {
       position: fixed;
@@ -558,17 +591,38 @@
       pointer-events: none;
       z-index: 100;
     }
+
     .pin-toast.show {
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
     @media(max-width:600px) {
+
       .pin-table-wrap thead th:nth-child(3),
-      .pin-table-wrap tbody td:nth-child(3) { display: none; }
-      .pin-table-wrap table { min-width: unset; width: 100%; }
-      .pin-table-wrap thead th { padding: 7px 3px; }
-      .pin-table-wrap thead th:first-child { max-width: 90px; width: 90px; padding-left: 8px; white-space: normal; }
-      .pin-table-wrap thead th:nth-child(2) { width: 26px; }
+      .pin-table-wrap tbody td:nth-child(3) {
+        display: none;
+      }
+
+      .pin-table-wrap table {
+        min-width: unset;
+        width: 100%;
+      }
+
+      .pin-table-wrap thead th {
+        padding: 7px 3px;
+      }
+
+      .pin-table-wrap thead th:first-child {
+        max-width: 90px;
+        width: 90px;
+        padding-left: 8px;
+        white-space: normal;
+      }
+
+      .pin-table-wrap thead th:nth-child(2) {
+        width: 26px;
+      }
     }
   </style>
 </head>
@@ -611,7 +665,7 @@
       </div>
     </div>
 
-        <div class="pin-section" id="pinSection" style="display:none">
+    <div class="pin-section" id="pinSection" style="display:none">
       <div class="pin-header">
         📌 比較中 <span id="pinCount"></span>体
         <button class="pin-clear-btn" id="pinClearBtn">すべて解除</button>
@@ -620,8 +674,16 @@
         <table>
           <thead>
             <tr>
-              <th>悪魔</th><th>Lv</th><th>種族</th>
-              <th>物理</th><th>火炎</th><th>氷結</th><th>電撃</th><th>衝撃</th><th>破魔</th><th>呪殺</th>
+              <th>悪魔</th>
+              <th>Lv</th>
+              <th>種族</th>
+              <th>物理</th>
+              <th>火炎</th>
+              <th>氷結</th>
+              <th>電撃</th>
+              <th>衝撃</th>
+              <th>破魔</th>
+              <th>呪殺</th>
             </tr>
           </thead>
           <tbody id="pinTbody"></tbody>
@@ -1087,12 +1149,19 @@
 
         return '<tr><td>' + nameLink + '</td><td>' + d.l + '</td><td>' + d.t + '</td>' + cells + '</tr>';
       }).join('');
+
+      // ピンハイライト反映
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        const link = tr.querySelector('td:first-child a');
+        if (!link) return;
+        tr.classList.toggle('pinned', pinnedNames.has(link.textContent));
+      });
     }
 
     document.getElementById('search').addEventListener('input', render);
     render();
 
-        // ピン機能
+    // ピン機能
     const MAX_PINS = 6;
     let pinnedNames = new Set();
 
