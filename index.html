@@ -1189,6 +1189,7 @@
       const countEl = document.getElementById('pinCount');
       if (pinnedNames.size === 0) {
         section.style.display = 'none';
+        document.querySelectorAll('#tbody tr').forEach(tr => tr.classList.remove('pinned'));
         return;
       }
       section.style.display = '';
