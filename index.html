@@ -480,6 +480,96 @@
         width: 26px;
       }
     }
+
+        /* ピン比較エリア */
+    .pin-section {
+      margin-bottom: 16px;
+    }
+    .pin-header {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pin-clear-btn {
+      font-size: 11px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+    .pin-clear-btn:hover {
+      color: var(--text);
+      background: var(--surface2);
+    }
+    .pin-table-wrap {
+      overflow-x: auto;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+    .pin-table-wrap::-webkit-scrollbar { height: 4px; }
+    .pin-table-wrap::-webkit-scrollbar-track { background: var(--surface); }
+    .pin-table-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .pin-table-wrap table {
+      min-width: 520px;
+    }
+    .pin-table-wrap thead th {
+      background: var(--surface);
+      padding: 7px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      white-space: nowrap;
+    }
+    .pin-table-wrap thead th:first-child {
+      text-align: left;
+      padding-left: 16px;
+      min-width: 140px;
+    }
+    .pin-table-wrap thead th:nth-child(2) { min-width: 36px; }
+    .pin-table-wrap thead th:nth-child(3) { min-width: 72px; }
+    tbody tr.pinned {
+      background: oklch(0.65 0.15 60 / 0.07);
+    }
+    tbody tr.pinned:hover {
+      background: oklch(0.65 0.15 60 / 0.12);
+    }
+    /* トースト */
+    .pin-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      opacity: 0;
+      transition: opacity 200ms, transform 200ms;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .pin-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    @media(max-width:600px) {
+      .pin-table-wrap thead th:nth-child(3),
+      .pin-table-wrap tbody td:nth-child(3) { display: none; }
+      .pin-table-wrap table { min-width: unset; width: 100%; }
+      .pin-table-wrap thead th { padding: 7px 3px; }
+      .pin-table-wrap thead th:first-child { max-width: 90px; width: 90px; padding-left: 8px; white-space: normal; }
+      .pin-table-wrap thead th:nth-child(2) { width: 26px; }
+    }
   </style>
 </head>
 
@@ -520,6 +610,25 @@
         <button class="tribe-btn active" data-tribe="">すべて</button>
       </div>
     </div>
+
+        <div class="pin-section" id="pinSection" style="display:none">
+      <div class="pin-header">
+        📌 比較中 <span id="pinCount"></span>体
+        <button class="pin-clear-btn" id="pinClearBtn">すべて解除</button>
+      </div>
+      <div class="pin-table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>悪魔</th><th>Lv</th><th>種族</th>
+              <th>物理</th><th>火炎</th><th>氷結</th><th>電撃</th><th>衝撃</th><th>破魔</th><th>呪殺</th>
+            </tr>
+          </thead>
+          <tbody id="pinTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="pin-toast" id="pinToast"></div>
 
     <div class="stats" id="stats"></div>
 
@@ -982,6 +1091,84 @@
 
     document.getElementById('search').addEventListener('input', render);
     render();
+
+        // ピン機能
+    const MAX_PINS = 6;
+    let pinnedNames = new Set();
+
+    function resClassPin(v) {
+      if (v === '弱') return 'r-weak';
+      if (v === '耐') return 'r-resist';
+      if (v === '無') return 'r-null';
+      if (v === '吸') return 'r-drain';
+      if (v === '反') return 'r-repel';
+      return 'r-normal';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('pinToast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2000);
+    }
+
+    function renderPins() {
+      const section = document.getElementById('pinSection');
+      const tbody = document.getElementById('pinTbody');
+      const countEl = document.getElementById('pinCount');
+      if (pinnedNames.size === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      section.style.display = '';
+      countEl.textContent = pinnedNames.size;
+      const pinDemons = DEMONS.filter(d => pinnedNames.has(d.n));
+      tbody.innerHTML = pinDemons.map(d => {
+        const cells = d.r.map(v => {
+          const cls = resClassPin(v);
+          const disp = v === '–' ? '<span class="r r-normal">–</span>' : '<span class="r ' + cls + '">' + v + '</span>';
+          return '<td>' + disp + '</td>';
+        }).join('');
+        const query = encodeURIComponent('真・女神転生5 Vengeance ' + d.n);
+        const googleUrl = 'https://www.google.com/search?q=' + query;
+        const nameLink = '<a href="' + googleUrl + '" target="_blank" rel="noopener noreferrer" style="color:var(--text);text-decoration:underline;text-decoration-color:var(--muted);text-underline-offset:3px;">' + d.n + '</a>';
+        return '<tr><td>' + nameLink + '</td><td>' + d.l + '</td><td>' + d.t + '</td>' + cells + '</tr>';
+      }).join('');
+
+      // メインテーブルのハイライト更新
+      document.querySelectorAll('#tbody tr').forEach(tr => {
+        const link = tr.querySelector('td:first-child a');
+        if (!link) return;
+        const name = link.textContent;
+        tr.classList.toggle('pinned', pinnedNames.has(name));
+      });
+    }
+
+    // 行タップで固定/解除（名前リンク以外）
+    document.getElementById('tbody').addEventListener('click', e => {
+      if (e.target.closest('a')) return; // リンクは通す
+      const tr = e.target.closest('tr');
+      if (!tr) return;
+      const link = tr.querySelector('td:first-child a');
+      if (!link) return;
+      const name = link.textContent;
+      if (pinnedNames.has(name)) {
+        pinnedNames.delete(name);
+      } else {
+        if (pinnedNames.size >= MAX_PINS) {
+          showToast('固定できるのは' + MAX_PINS + '体までです');
+          return;
+        }
+        pinnedNames.add(name);
+      }
+      renderPins();
+    });
+
+    document.getElementById('pinClearBtn').addEventListener('click', () => {
+      pinnedNames.clear();
+      renderPins();
+      document.querySelectorAll('#tbody tr.pinned').forEach(tr => tr.classList.remove('pinned'));
+    });
   </script>
 </body>
 
