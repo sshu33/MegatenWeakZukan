@@ -1150,12 +1150,14 @@
         return '<tr><td>' + nameLink + '</td><td>' + d.l + '</td><td>' + d.t + '</td>' + cells + '</tr>';
       }).join('');
 
-      // // ピンハイライト反映
-      // document.querySelectorAll('#tbody tr').forEach(tr => {
-      //   const link = tr.querySelector('td:first-child a');
-      //   if (!link) return;
-      //   tr.classList.toggle('pinned', pinnedNames.has(link.textContent));
-      // });
+      // ピンハイライト反映
+      setTimeout(() => {
+        document.querySelectorAll('#tbody tr').forEach(tr => {
+          const link = tr.querySelector('td:first-child a');
+          if (!link) return;
+          tr.classList.toggle('pinned', pinnedNames.has(link.textContent));
+        });
+      }, 0);
     }
 
     document.getElementById('search').addEventListener('input', render);
